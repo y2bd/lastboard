@@ -4,9 +4,9 @@ from urllib.parse import urljoin
 
 from sanic import DefaultSanic, Sanic
 
-from lib.lastfm import Album, get_weekly_albums
-from lib.rec import Release, get_recent_queue
-from lib.unaccent import unaccent
+from app.api.lastfm import Album, get_weekly_albums
+from app.api.rec import Release, get_recent_queue
+from app.util.unaccent import unaccent
 from settings import REC_BASE_URL
 
 
