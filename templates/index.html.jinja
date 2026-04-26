@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>lastboard</title>
+    </head>
+
+    <body>
+        <section>
+        <h1>Pending review</h1>
+        <ul>
+            {% for item in pending %}
+            <li><a href="{{ item.page_url }}">{{ item.artist }} - <strong>{{ item.title }}</strong></a></li>
+            {% endfor %}
+        </ul>
+        </section>
+
+        <section>
+        <h1>Has been reviewed</h1>
+        <ul>
+            {% for item in reviewed %}
+            <li><a href="{{ item.page_url }}">{{ item.artist }} - <strong>{{ item.title }}</strong></a></li>
+            {% endfor %}
+        </ul>
+        </section>
+    </body>
+</html>
