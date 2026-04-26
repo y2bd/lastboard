@@ -12,7 +12,7 @@ T = TypeVar("T")
 async def cache_or_run(
     cache_key: str,
     coroutine: Coroutine[T, Any, Any],
-    cache_time_seconds: int = 60 * 60 * 12,  # 1 hour
+    cache_time_seconds: int = 60 * 60,  # 1 hour
 ) -> T:
     current_time = int(time())
 
