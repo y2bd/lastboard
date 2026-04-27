@@ -44,13 +44,12 @@ ul a {
     text-decoration: underline;
     text-decoration-color: var(--blue);
     text-decoration-style: dotted;
-
-    transition: background-color 0.1s ease-out;
 }
 
 ul a:hover,
 ul a:focus {
-    background-color: var(--light-blue);
-    box-shadow: 0 0 0px 2px var(--light-blue);
+    color: var(--white);
+    background-color: var(--blue);
+    box-shadow: 0 0 0px 2px var(--blue);
     box-decoration-break: clone;
 }

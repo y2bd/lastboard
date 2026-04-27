@@ -24,6 +24,12 @@ async def detach_aio(app: DefaultSanic):
 @app.ext.template("index.html.jinja")
 async def hello_world(request: Request):
     unrelated, pending, reviewed = await compare_reviews_to_listens()
+
+    pending = sorted(pending, key=lambda p: p.listens, reverse=True)
+
+    unrelated = sorted(unrelated, key=lambda p: p.page_url)
+    reviewed = sorted(reviewed, key=lambda p: p.page_url)
+
     return await render(
         context={"unrelated": unrelated, "pending": pending, "reviewed": reviewed}
     )

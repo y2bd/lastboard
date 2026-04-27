@@ -3,6 +3,17 @@
     font-weight: 400;
     font-style: normal;
     src: url("/resources/iAWriterQuattroS-Regular.woff2") format("woff2");
+
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "Quattro";
+    font-weight: 800;
+    font-style: normal;
+    src: url("/resources/iAWriterQuattroS-Bold.woff2") format("woff2");
+
+    font-display: fallback;
 }
 
 :root {

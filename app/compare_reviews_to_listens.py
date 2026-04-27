@@ -15,6 +15,7 @@ class ComparisonResult:
     title: str
     artist: str
     page_url: str
+    listens: int | None
 
     @staticmethod
     def from_recent(recent: Release) -> "ComparisonResult":
@@ -22,6 +23,7 @@ class ComparisonResult:
             title=recent.title,
             artist=recent.artist,
             page_url=urljoin(REC_BASE_URL, recent.page_relative_url),
+            listens=None,
         )
 
     @staticmethod
@@ -30,28 +32,29 @@ class ComparisonResult:
             title=weekly.title,
             artist=weekly.artist,
             page_url=weekly.page_url,
+            listens=weekly.play_count,
         )
 
 
 async def compare_reviews_to_listens():
     _app: DefaultSanic = Sanic.get_app()
 
-    recent_queue, weekly_albums = await asyncio.gather(
+    rec_queue, lastfm_queue = await asyncio.gather(
         get_recent_queue(_app.ctx.aio), get_recent_albums(_app.ctx.aio)
     )
 
-    only_in_recent: set[ComparisonResult] = set(
-        ComparisonResult.from_recent(recent) for recent in recent_queue
+    only_in_rec: set[ComparisonResult] = set(
+        ComparisonResult.from_recent(recent) for recent in rec_queue
     )
-    only_in_weekly: set[ComparisonResult] = set(
-        ComparisonResult.from_weekly(weekly) for weekly in weekly_albums
+    only_in_lastfm: set[ComparisonResult] = set(
+        ComparisonResult.from_weekly(weekly) for weekly in lastfm_queue
     )
     both: set[ComparisonResult] = set()
 
-    for recent in recent_queue:
+    for recent in rec_queue:
         n_left = unaccent(recent.title).lower()
 
-        for weekly in weekly_albums:
+        for weekly in lastfm_queue:
             n_right = unaccent(weekly.title).lower()
 
             # TODO
@@ -61,8 +64,8 @@ async def compare_reviews_to_listens():
             if n_left == n_right:
                 both.add(ComparisonResult.from_recent(recent))
 
-                only_in_recent.remove(ComparisonResult.from_recent(recent))
-                only_in_weekly.remove(ComparisonResult.from_weekly(weekly))
+                only_in_rec.remove(ComparisonResult.from_recent(recent))
+                only_in_lastfm.remove(ComparisonResult.from_weekly(weekly))
                 break
 
-    return only_in_recent, only_in_weekly, both
+    return only_in_rec, only_in_lastfm, both

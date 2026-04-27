@@ -96,9 +96,7 @@ async def get_recent_albums(
                 page_url=track_album_url_maybe,
             )
 
-    return sorted(
-        list(recent_albums.values()), key=lambda a: a.play_count, reverse=True
-    )
+    return list(recent_albums.values())
 
 
 async def _get_tracks_request(
