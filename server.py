@@ -6,6 +6,8 @@ from app.compare_reviews_to_listens import compare_reviews_to_listens
 
 app = Sanic("lastboard")
 
+app.static("/resources", "./static", name="resources")
+
 
 @app.before_server_start
 async def attach_aio(app: DefaultSanic):

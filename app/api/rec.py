@@ -21,7 +21,7 @@ class Release:
 async def get_recent_queue(
     client: aiohttp.ClientSession, user: str = DEFAULT_REC_USER, limit=40
 ) -> list[Release]:
-    response_dict = await cache_or_run(
+    (response_dict, _) = await cache_or_run(
         "releases", _get_recent_queue_request(client, user, limit)
     )
 

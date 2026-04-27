@@ -1,7 +1,8 @@
 import json
+from collections.abc import Coroutine
 from pathlib import Path
 from time import time
-from typing import Any, Coroutine, TypeVar
+from typing import Any, TypeVar
 
 from aiofile import async_open
 from sanic.log import logger
@@ -11,9 +12,9 @@ T = TypeVar("T")
 
 async def cache_or_run(
     cache_key: str,
-    coroutine: Coroutine[T, Any, Any],
+    coroutine: Coroutine[Any, Any, T],
     cache_time_seconds: int = 60 * 60,  # 1 hour
-) -> T:
+) -> tuple[T, int]:
     current_time = int(time())
 
     base_path = Path.cwd()
@@ -35,7 +36,7 @@ async def cache_or_run(
             ):
                 coroutine.close()
                 logger.debug(f"Cache hit for {cache_key}")
-                return cached_data
+                return cached_data, cached_time
 
     # otherwise, run the coroutine and cache the result
     result = await coroutine
@@ -43,4 +44,4 @@ async def cache_or_run(
     async with async_open(data_path, "w") as f:
         await f.write(json.dumps({"time": current_time, "data": result}))
 
-    return result
+    return result, current_time

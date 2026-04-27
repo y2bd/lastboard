@@ -1,0 +1,19 @@
+@font-face {
+    font-family: "Quattro";
+    font-weight: 400;
+    font-style: normal;
+    src: url("/resources/iAWriterQuattroS-Regular.woff2") format("woff2");
+}
+
+:root {
+    --body-font-face:
+        "Quattro", ui-rounded, "Hiragino Maru Gothic ProN", Quicksand,
+        Comfortaa, Manjari, "Arial Rounded MT", "Arial Rounded MT Bold",
+        Calibri, source-sans-pro, sans-serif;
+
+    /* colors */
+    --white: #f8f8f8;
+    --black: #31050d;
+    --blue: #4999c9;
+    --light-blue: #d7e6f2;
+}

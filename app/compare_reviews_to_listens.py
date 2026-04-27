@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 
 from sanic import DefaultSanic, Sanic
 
-from app.api.lastfm import Album, get_weekly_albums
+from app.api.lastfm import Album, get_recent_albums
 from app.api.rec import Release, get_recent_queue
 from app.util.unaccent import unaccent
 from settings import REC_BASE_URL
@@ -37,7 +37,7 @@ async def compare_reviews_to_listens():
     _app: DefaultSanic = Sanic.get_app()
 
     recent_queue, weekly_albums = await asyncio.gather(
-        get_recent_queue(_app.ctx.aio), get_weekly_albums(_app.ctx.aio)
+        get_recent_queue(_app.ctx.aio), get_recent_albums(_app.ctx.aio)
     )
 
     only_in_recent: set[ComparisonResult] = set(
