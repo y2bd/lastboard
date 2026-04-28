@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Iterable
 from urllib.parse import urljoin
 
 import aiohttp
@@ -32,7 +33,7 @@ class Album:
 
 async def get_weekly_albums(
     client: aiohttp.ClientSession, user: str = DEFAULT_LAST_FM_USER
-) -> list:
+) -> Iterable[Album]:
     (response_dict, _) = await cache_or_run(
         "weekly_albums", _get_weekly_albums_request(client, user)
     )
@@ -41,7 +42,7 @@ async def get_weekly_albums(
 
     logger.debug(f"Fetched {len(data)} weekly albums for user {user}")
 
-    return [
+    return (
         Album(
             title=album.get("name", ""),
             artist=album.get("artist", {}).get("#text", ""),
@@ -49,7 +50,7 @@ async def get_weekly_albums(
             page_url=album.get("url", ""),
         )
         for album in data
-    ]
+    )
 
 
 async def _get_weekly_albums_request(client: aiohttp.ClientSession, user: str) -> dict:
@@ -62,7 +63,7 @@ async def _get_weekly_albums_request(client: aiohttp.ClientSession, user: str) -
 
 async def get_recent_albums(
     client: aiohttp.ClientSession, user: str = DEFAULT_LAST_FM_USER
-) -> list:
+) -> Iterable[Album]:
     async def _two_page() -> list:
         page_1 = await _get_tracks_request(client, user, 1)
         page_2 = await _get_tracks_request(client, user, 2)
@@ -96,7 +97,7 @@ async def get_recent_albums(
                 page_url=track_album_url_maybe,
             )
 
-    return list(recent_albums.values())
+    return recent_albums.values()
 
 
 async def _get_tracks_request(

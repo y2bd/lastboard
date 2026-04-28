@@ -10,7 +10,7 @@
     <ul>
         {%- for item in pending %}
         <li>
-            <a href="{{ item.page_url }}">{{ item.artist }} - <strong>{{ item.title }}</strong></a>
+            <a href="{{ item.slug_page }}">{{ item.artist }} - <strong>{{ item.title }}</strong></a>
             {% if item.listens is not none %}
             ({{ item.listens }} listen(s))
             {% endif %}
@@ -22,7 +22,7 @@
     <h1>Has been reviewed</h1>
     <ul>
         {%- for item in reviewed %}
-        <li><a href="{{ item.page_url }}">{{ item.artist }} - <strong>{{ item.title }}</strong></a></li>
+        <li><a href="{{ item.slug_page }}">{{ item.artist }} - <strong>{{ item.title }}</strong></a></li>
         {% endfor -%}
     </ul>
     </section>

@@ -1,38 +1,47 @@
 import asyncio
 from dataclasses import dataclass
-from urllib.parse import urljoin
 
 from sanic import DefaultSanic, Sanic
 
 from app.api.lastfm import Album, get_recent_albums
 from app.api.rec import Release, get_recent_queue
+from app.util.slug import Slug, emit_slug
 from app.util.unaccent import unaccent
-from settings import REC_BASE_URL
 
 
 @dataclass(eq=True, frozen=True)
 class ComparisonResult:
     title: str
     artist: str
-    page_url: str
+    slug_page: str
     listens: int | None
 
     @staticmethod
-    def from_recent(recent: Release) -> "ComparisonResult":
+    async def from_rec_release(release: Release) -> "ComparisonResult":
+        _app = Sanic.get_app()
+
+        slug_hash = await emit_slug(Slug(title=release.title, artist=release.artist))
+        slug_page = _app.url_for("release", slug_hash=slug_hash)
+
         return ComparisonResult(
-            title=recent.title,
-            artist=recent.artist,
-            page_url=urljoin(REC_BASE_URL, recent.page_relative_url),
+            title=release.title,
+            artist=release.artist,
+            slug_page=slug_page,
             listens=None,
         )
 
     @staticmethod
-    def from_weekly(weekly: Album) -> "ComparisonResult":
+    async def from_lastfm_album(album: Album) -> "ComparisonResult":
+        _app = Sanic.get_app()
+
+        slug_hash = await emit_slug(Slug(title=album.title, artist=album.artist))
+        slug_page = _app.url_for("release", slug_hash=slug_hash)
+
         return ComparisonResult(
-            title=weekly.title,
-            artist=weekly.artist,
-            page_url=weekly.page_url,
-            listens=weekly.play_count,
+            title=album.title,
+            artist=album.artist,
+            slug_page=slug_page,
+            listens=album.play_count,
         )
 
 
@@ -43,18 +52,22 @@ async def compare_reviews_to_listens():
         get_recent_queue(_app.ctx.aio), get_recent_albums(_app.ctx.aio)
     )
 
-    only_in_rec: set[ComparisonResult] = set(
-        ComparisonResult.from_recent(recent) for recent in rec_queue
+    rec_comp = await asyncio.gather(
+        *[ComparisonResult.from_rec_release(recent) for recent in rec_queue]
     )
-    only_in_lastfm: set[ComparisonResult] = set(
-        ComparisonResult.from_weekly(weekly) for weekly in lastfm_queue
+
+    lastfm_comp = await asyncio.gather(
+        *[ComparisonResult.from_lastfm_album(weekly) for weekly in lastfm_queue]
     )
+
+    only_in_rec: set[ComparisonResult] = set(rec_comp)
+    only_in_lastfm: set[ComparisonResult] = set(lastfm_comp)
     both: set[ComparisonResult] = set()
 
-    for recent in rec_queue:
+    for recent in rec_comp:
         n_left = unaccent(recent.title).lower()
 
-        for weekly in lastfm_queue:
+        for weekly in lastfm_comp:
             n_right = unaccent(weekly.title).lower()
 
             # TODO
@@ -62,10 +75,10 @@ async def compare_reviews_to_listens():
             # - doesn't handle different language titles
             # - doesn't handle titles with (special) (limited) (etc) in them
             if n_left == n_right:
-                both.add(ComparisonResult.from_recent(recent))
+                both.add(recent)
 
-                only_in_rec.remove(ComparisonResult.from_recent(recent))
-                only_in_lastfm.remove(ComparisonResult.from_weekly(weekly))
+                only_in_rec.remove(recent)
+                only_in_lastfm.remove(weekly)
                 break
 
     return only_in_rec, only_in_lastfm, both
