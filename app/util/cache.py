@@ -7,6 +7,8 @@ from typing import Any, TypeVar
 from aiofile import async_open
 from sanic.log import logger
 
+from app.util.filename import sanitize_filename
+
 T = TypeVar("T")
 
 
@@ -18,7 +20,7 @@ async def cache_or_run(
     current_time = int(time())
 
     base_path = Path.cwd()
-    data_path = base_path / "data" / f"{cache_key}.json"
+    data_path = base_path / "data" / f"{sanitize_filename(cache_key)}.json"
 
     # grab cache
     # see if it exists and is fresh

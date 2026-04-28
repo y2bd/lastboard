@@ -2,12 +2,12 @@ import re
 
 from sanic.log import logger
 
-_remove_ft = re.compile(r" ft\. .+$", re.IGNORECASE)
+_remove_ft = re.compile(r" (feat|ft)\. .+$", re.IGNORECASE)
 _remove_amp = re.compile(r" & .+$", re.IGNORECASE)
 
 
 def unartist(artist: str) -> str:
-    relevant = "ft" in artist or "&" in artist
+    relevant = "feat" in artist or "ft" in artist or "&" in artist
 
     if relevant:
         logger.debug("unartisting %s", artist)

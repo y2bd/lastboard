@@ -5,8 +5,9 @@ from sanic import DefaultSanic, Sanic
 
 from app.api.lastfm import Album, get_recent_albums
 from app.api.rec import Release, get_recent_queue
+from app.util.filename import sanitize_filename
 from app.util.slug import Slug, emit_slug
-from app.util.unaccent import unaccent
+from app.util.unartist import unartist
 
 
 @dataclass(eq=True, frozen=True)
@@ -15,6 +16,11 @@ class ComparisonResult:
     artist: str
     slug_page: str
     listens: int | None
+
+    def is_equivalent_to(self, other: "ComparisonResult") -> bool:
+        return sanitize_filename(
+            f"{unartist(self.artist)} - {self.title}"
+        ) == sanitize_filename(f"{unartist(other.artist)} - {other.title}")
 
     @staticmethod
     async def from_rec_release(release: Release) -> "ComparisonResult":
@@ -65,16 +71,11 @@ async def compare_reviews_to_listens():
     both: set[ComparisonResult] = set()
 
     for recent in rec_comp:
-        n_left = unaccent(recent.title).lower()
-
         for weekly in lastfm_comp:
-            n_right = unaccent(weekly.title).lower()
-
             # TODO
-            # - doesn't handle same name different artist
             # - doesn't handle different language titles
             # - doesn't handle titles with (special) (limited) (etc) in them
-            if n_left == n_right:
+            if recent.is_equivalent_to(weekly):
                 both.add(recent)
 
                 only_in_rec.remove(recent)

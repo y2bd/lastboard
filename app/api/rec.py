@@ -91,7 +91,7 @@ async def search_release(client: aiohttp.ClientSession, slug: Slug) -> Release |
     title = _normalize_release_title(slug.title)
 
     (response_body, _) = await cache_or_run(
-        f"search_release:{artist}:{title}",
+        f"search-release-{artist}-{title}",
         _search_release_request(client, artist, title),
         # 3 days, releases should not change frequently
         cache_time_seconds=60 * 60 * 72,
@@ -99,7 +99,7 @@ async def search_release(client: aiohttp.ClientSession, slug: Slug) -> Release |
 
     releases = sorted(
         response_body["data"],
-        key=lambda r: r.get("popularity", 0),
+        key=_rank_release,
         reverse=True,
     )
 
@@ -116,6 +116,15 @@ async def search_release(client: aiohttp.ClientSession, slug: Slug) -> Release |
     except Exception as e:
         logger.exception(e)
         raise ServerError("Failed to parse release data")
+
+
+def _rank_release(release_data: dict) -> int:
+    popularity: int = release_data.get("popularity", 0)
+    release_type: int = release_data.get("type", 0)
+
+    # popularity is increasing, the higher the better
+    # release type has album as the lowest and more specifics as higher numbers, so punish higher numbers
+    return popularity - release_type
 
 
 async def _search_release_request(

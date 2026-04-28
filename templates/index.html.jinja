@@ -12,7 +12,11 @@
         <li>
             <a href="{{ item.slug_page }}">{{ item.artist }} - <strong>{{ item.title }}</strong></a>
             {% if item.listens is not none %}
-            ({{ item.listens }} listen(s))
+            {% if item.listens > 1 %}
+            ({{ item.listens }} listens)
+            {% else %}
+            ({{ item.listens }} listen)
+            {% endif %}
             {% endif %}
         </li>
         {% endfor -%}
