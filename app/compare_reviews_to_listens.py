@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass
 
 from sanic import DefaultSanic, Sanic
+from sanic.log import logger
 
 from app.api.lastfm import Album, get_recent_albums
 from app.api.rec import Release, get_recent_queue
@@ -19,8 +20,10 @@ class ComparisonResult:
 
     def is_equivalent_to(self, other: "ComparisonResult") -> bool:
         return sanitize_filename(
-            f"{unartist(self.artist)} - {self.title}"
-        ) == sanitize_filename(f"{unartist(other.artist)} - {other.title}")
+            f"{unartist(self.artist)} - {self.title}", strip_accent=True
+        ) == sanitize_filename(
+            f"{unartist(other.artist)} - {other.title}", strip_accent=True
+        )
 
     @staticmethod
     async def from_rec_release(release: Release) -> "ComparisonResult":
